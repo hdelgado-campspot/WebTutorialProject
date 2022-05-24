@@ -1,0 +1,13 @@
+server:
+  registerDefaultExceptionMappers: false
+  applicationConnectors:
+    - type: http
+      port: 8880
+      maxRequestHeaderSize: 16KiB
+      maxResponseHeaderSize: 16KiB
+  adminConnectors:
+    - type: http
+      port: 8881
+      maxRequestHeaderSize: 16KiB
+      maxResponseHeaderSize: 16KiB
+  rootPath: /api
