@@ -1,0 +1,42 @@
+server:
+  registerDefaultExceptionMappers: true
+  applicationConnectors:
+    - type: http
+      port: 8880
+      maxRequestHeaderSize: 16KiB
+      maxResponseHeaderSize: 16KiB
+  adminConnectors:
+    - type: http
+      port: 8881
+      maxRequestHeaderSize: 16KiB
+      maxResponseHeaderSize: 16KiB
+  rootPath: /api
+
+jerseyClient:
+  timeout: 3m
+  connectionRequestTimeout: 1m
+  cookiesEnabled: true
+  minThreads: 10
+
+database:
+  driverClass: com.mysql.cj.jdbc.Driver
+  user: root
+  url: jdbc:mysql://localhost:3306/campspot_local?characterEncoding=UTF-8&useSSL=false
+  properties:
+    charSet: UTF-8
+    hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+  defaultTransactionIsolation: READ_COMMITTED
+  validationQuery: "/* DropWizard Health Check */ SELECT 1"
+  validationQueryTimeout: 10s
+  initialSize: 32
+  minSize: 32
+  maxSize: 256
+  checkConnectionWhileIdle: false
+  checkConnectionOnBorrow: true
+  rollbackOnReturn: true
+  removeAbandoned: true
+  removeAbandonedTimeout: 900s
+  abandonWhenPercentageFull: 0
+  logAbandonedConnections: true
+  logValidationErrors: true
+  maxConnectionAge: 10m
