@@ -1,0 +1,9 @@
+version: '3.5'
+services:
+  mysql-local:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "3308:3306"
+    restart: unless-stopped
