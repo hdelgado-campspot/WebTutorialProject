@@ -15,12 +15,21 @@ class Resource(
     fun print() {
         println("Hellooooo")
     }
-    private val counter = AtomicLong()
+
     @GET
     @Path("/hello")
     @Timed
     fun getString(@QueryParam("string") string: String?): String {
         return service.takeString(string)
+    }
+
+    @POST
+    @Path("/create")
+    @Timed
+    fun checkJoke(@QueryParam("string") type: String,
+                   @QueryParam("string") setup: String, @QueryParam("string") punchline: String?): Joke {
+
+        return service.createJoke(type, setup, punchline)
     }
 
 }

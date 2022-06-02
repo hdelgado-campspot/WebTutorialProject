@@ -21,7 +21,7 @@ jerseyClient:
 database:
   driverClass: com.mysql.cj.jdbc.Driver
   user: root
-  url: jdbc:mysql://localhost:3306/campspot_local?characterEncoding=UTF-8&useSSL=false
+  url: jdbc:mysql://127.0.0.1:3306/?user=root
   properties:
     charSet: UTF-8
     hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
