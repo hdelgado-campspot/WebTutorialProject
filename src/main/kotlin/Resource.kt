@@ -31,5 +31,4 @@ class Resource(
 
         return service.createJoke(type, setup, punchline)
     }
-
 }

@@ -64,8 +64,6 @@ class AggregatorApplication {
     }
 
 
-
-
     private fun registerAPIResources(
         environment: Environment,
         apiResourceBeans: com.campspot.Beans
