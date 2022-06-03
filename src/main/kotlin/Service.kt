@@ -20,7 +20,7 @@ class Service(
                 setup = jokeSetup,
                 punchline = jokePunchLine
             )
-            daoManager[JokeDAO::class].persist(joke)
+            daoManager[JokeDAO::class].insertJoke(joke)
             return joke
         }
         else {
@@ -30,5 +30,19 @@ class Service(
                 punchline = "Joke"
             )
         }
+    }
+
+    fun getJokeByType(type: String): List<Joke> {
+        val jokes =  daoManager[JokeDAO::class].getJokesByType(type)
+        if (!jokes.isEmpty()) {
+            return jokes
+        }
+        return listOf(
+            Joke(
+                type = "general",
+                setup = "Error",
+                punchline = "No Jokes"
+            )
+        )
     }
 }

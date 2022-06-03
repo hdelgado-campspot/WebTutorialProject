@@ -34,4 +34,13 @@ class Resource(
 
         return service.createJoke(jokeRequest.type, jokeRequest.setup, jokeRequest.punchline)
     }
+
+    @GET
+    @Path("/joke")
+    @Timed
+    @InTransaction(name = MASTER)
+    fun getJoke(@QueryParam("type") type: String): List<Joke> {
+        return service.getJokeByType(type)
+    }
+
 }

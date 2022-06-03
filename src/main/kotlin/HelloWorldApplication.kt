@@ -14,6 +14,7 @@ import javax.servlet.DispatcherType
 import Resource
 import Service
 import com.campspot.common.core.exceptions.tracing.setupClientTracing
+import com.campspot.dao.JokeDAO
 import com.campspot.jdbi3.DAOManager
 import com.campspot.jdbi3.TransactionApplicationListener
 import com.campspot.jdbi3.TransactionAspect
@@ -121,9 +122,9 @@ class HelloWorldApplication : Application<HelloWorldConfiguration>() {
         ): MyDAOManager{
             val jdbi = JdbiFactory()
                 .build(environment, configuration.dataSourceFactory, "jdbi")
-                .installPlugin(SqlObjectPlugin())
                 .installPlugin(KotlinPlugin())
                 .installPlugin(KotlinSqlObjectPlugin())
+                .installPlugin(SqlObjectPlugin())
                 .setSqlLogger(InstrumentedSqlLogger(environment.metrics()))
 
             TimeZone.setDefault(timeZone)
