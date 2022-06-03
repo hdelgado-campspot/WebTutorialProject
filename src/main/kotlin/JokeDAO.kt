@@ -1,17 +1,11 @@
 package com.campspot.dao
 
-import AbstractJokeDAO
 import Joke
-import com.campspot.dao.entities.CampspotModel
-import liquibase.pro.packaged.E
-import org.hibernate.query.Query
+import com.campspot.jdbi3.DAO
+import io.dropwizard.hibernate.AbstractDAO
 
-class JokeDAO : AbstractJokeDAO<Joke>() {
-    fun findById(id: Long): E? {
-        val query: Query<*> = currentSession().createQuery(
-            "SHOW COLUMNS FROM sys.joke"
-        )
-        query.setParameter("id", id)
-        return getOne(query, "No postStaySurvey model found with id: $id")
+class JokeDAO : DAO, AbstractDAO<Joke>() {
+    public override fun persist(entity: Joke): Joke {
+        return super.persist(entity)
     }
 }

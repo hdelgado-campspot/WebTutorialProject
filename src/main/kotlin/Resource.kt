@@ -1,6 +1,9 @@
 
+import com.campspot.HelloWorldApplication.Companion.MASTER
+import com.campspot.jdbi3.InTransaction
 import com.codahale.metrics.annotation.Timed
 import java.util.concurrent.atomic.AtomicLong
+import javax.validation.Valid
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 
@@ -26,9 +29,9 @@ class Resource(
     @POST
     @Path("/create")
     @Timed
-    fun checkJoke(@QueryParam("string") type: String,
-                   @QueryParam("string") setup: String, @QueryParam("string") punchline: String?): Joke {
+    @InTransaction(name = MASTER)
+    fun checkJoke(@Valid jokeRequest: Joke): Joke {
 
-        return service.createJoke(type, setup, punchline)
+        return service.createJoke(jokeRequest.type, jokeRequest.setup, jokeRequest.punchline)
     }
 }

@@ -1,20 +1,23 @@
+
+
+import com.campspot.dao.entities.CampspotModel
+import lombok.Getter
+import lombok.Setter
 import javax.persistence.*
 
-@Table(name = "joke")
-@Entity
-class Joke(
+//@Table(name = "joke")
+//@Entity
+//@Getter
+//@Setter
+data class Joke(
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false)
-    var id: Int,
+    val id: Int? = null,
 
-    @Column(name = "type", nullable = false, length = 100)
-    var type: String,
+    val type: String,
 
-    @Column(name = "setup", nullable = false, length = 100)
-    var setup: String,
+    val setup: String,
 
-    @Column(name = "punchline", nullable = true, length = 100)
-    var punchline: String? = null
-)
+    val punchline: String? = null
+){
+
+}

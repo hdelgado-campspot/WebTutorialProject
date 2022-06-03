@@ -2,6 +2,7 @@ package com.campspot
 
 import HelloWorldConfiguration
 import LocalEnvironment
+import MyDAOManager
 import io.dropwizard.Application
 import io.dropwizard.setup.Environment
 import com.campspot.common.core.exceptions.dropwizard.registerExceptionMappers
@@ -13,15 +14,24 @@ import javax.servlet.DispatcherType
 import Resource
 import Service
 import com.campspot.common.core.exceptions.tracing.setupClientTracing
+import com.campspot.jdbi3.DAOManager
+import com.campspot.jdbi3.TransactionApplicationListener
+import com.campspot.jdbi3.TransactionAspect
+import com.codahale.metrics.jdbi3.InstrumentedSqlLogger
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.dropwizard.client.JerseyClientBuilder
 import io.dropwizard.db.DataSourceFactory
 import io.dropwizard.jackson.Jackson
+import io.dropwizard.jdbi3.JdbiFactory
 import io.dropwizard.migrations.MigrationsBundle
 import io.dropwizard.setup.Bootstrap
 import org.glassfish.jersey.client.rx.guava.RxListenableFutureInvokerProvider
 import org.glassfish.jersey.logging.LoggingFeature
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.jdbi.v3.sqlobject.SqlObjectPlugin
+import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import org.joda.time.DateTimeZone
 import java.io.File
 import java.util.logging.Level
@@ -47,24 +57,39 @@ class HelloWorldApplication : Application<HelloWorldConfiguration>() {
         configuration: HelloWorldConfiguration,
         environment: Environment
     ) {
+
+        val daoManager = setUpDAOManager(
+            environment = environment,
+            configuration = configuration,
+            timeZone = TIME_ZONE
+        )
+
+        val transactionAspect = TransactionAspect(mapOf("" to daoManager.jdbi), daoManager)
+
+
         setUpExternalServiceClient(environment, configuration)
+
         registerExceptionMappers(
             jersey = environment.jersey(),
             passThroughErrors = configuration.passThroughErrors
         )
+
         environment.servlets()
             .addFilter("request-logs", GelfLoggingFilter())
             .addMappingForUrlPatterns(EnumSet.allOf(DispatcherType::class.java), true, "/*")
 
         serviceBeans = setUpServices(
             environment = environment,
-            configuration = configuration
+            configuration = configuration,
+            daoManager = daoManager
         )
         val apiResourceBeans = setUpAPIResources(configuration, serviceBeans)
+
         registerAPIResources(
             environment = environment,
             apiResourceBeans = apiResourceBeans
         )
+
         environment.servlets().setSessionHandler(SessionHandler())
     }
 
@@ -81,22 +106,62 @@ class HelloWorldApplication : Application<HelloWorldConfiguration>() {
         lateinit var LOCAL_ENVIRONMENT: String
         lateinit var serviceBeans: Beans
         lateinit var externalServiceClient: Client
+        const val MASTER = "master"
+
         @Throws(Exception::class)
         @JvmStatic
         fun main(args: Array<String>) {
             HelloWorldApplication().run(*args)
         }
 
+        fun setUpDAOManager(
+            environment: Environment,
+            configuration: HelloWorldConfiguration,
+            timeZone: TimeZone
+        ): MyDAOManager{
+            val jdbi = JdbiFactory()
+                .build(environment, configuration.dataSourceFactory, "jdbi")
+                .installPlugin(SqlObjectPlugin())
+                .installPlugin(KotlinPlugin())
+                .installPlugin(KotlinSqlObjectPlugin())
+                .setSqlLogger(InstrumentedSqlLogger(environment.metrics()))
+
+            TimeZone.setDefault(timeZone)
+
+            val daoManager = MyDAOManager(jdbi)
+
+            setUpJDBIListeners(
+                daoManager = daoManager,
+                jdbi = jdbi,
+                environment = environment
+            )
+
+            return daoManager
+        }
+
+        private fun setUpJDBIListeners(
+            daoManager: DAOManager,
+            jdbi: Jdbi,
+            environment: Environment
+        ) {
+            val transactionApplicationListener = TransactionApplicationListener(daoManager)
+            transactionApplicationListener.registerDbi(MASTER, jdbi)
+
+            environment.jersey().register(transactionApplicationListener)
+        }
+
         fun setUpServices(
             environment: Environment,
-            configuration: HelloWorldConfiguration
+            configuration: HelloWorldConfiguration,
+            daoManager: MyDAOManager
         ): Beans {
             val beanstalk = Beans.plantNewBeanstalk()
 
             return beanstalk
                 .bean(
                     Service(
-                        helloWorldConfiguration = configuration
+                        helloWorldConfiguration = configuration,
+                        daoManager = daoManager
                     )
                 )
                 .harvestBeans()

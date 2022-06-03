@@ -8,4 +8,5 @@ interface RuleDAO {
         """
     )
     fun getJokeTableInfo(): List<String>
+
 }
